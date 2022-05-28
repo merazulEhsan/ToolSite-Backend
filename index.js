@@ -21,6 +21,9 @@ async function run() {
     await client.connect();
     const productCollection = client.db("Tool_Site").collection("Products");
     const orderCollection = client.db("Tool_Site").collection("Orders");
+    const userCollection = client.db("Tool_Site").collection("users");
+    const reviewCollection = client.db("Tool_Site").collection("reviews");
+
     // Show product in home page
     app.get("/products", async (req, res) => {
       const query = {};
@@ -55,6 +58,57 @@ async function run() {
 
     });
 
+    //order get
+    app.get('/order', async (req,res)=>{
+      const email = req.query.email;
+      const query = {email};
+      const orders = await orderCollection.find(query).toArray();
+      res.send(orders);
+    });
+
+    //Users
+    app.put('/user/:email', async(req,res)=>{
+      const email = req.query.emails;
+      const users = req.body;
+      const filter = {email: email};
+      const option = {upsert : true};
+      const updateDoc = {
+        $set : users,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, option);
+      res.send(result)
+
+    });
+
+    //Delete order
+    app.delete('/order/:id', async (req,res)=>{
+      const id = req.params.id;
+          const query = {_id : ObjectId(id)};
+      const result = await orderCollection.deleteOne(query);
+      res.send(result);
+
+    });
+
+    // ger users
+    app.get('/user', async (req,res)=>{
+      const query = {};
+      const cursour = userCollection.find(query);
+      const products = await cursour.toArray();
+      res.send(products);
+    });
+
+    app.post('/review', async(req,res)=>{
+      const review = req.body;
+      const result =await reviewCollection.insertOne(review);
+      res.send(result);
+    })
+
+    app.get("/review", async (req, res) => {
+      const query = {};
+      const cursour = reviewCollection.find(query);
+      const review = await cursour.toArray();
+      res.send(review);
+    });
 
 
 
