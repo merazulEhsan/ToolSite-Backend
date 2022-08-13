@@ -39,12 +39,13 @@ async function run() {
       res.send(singleProduct);
     });
 
-    app.post("/order", async (req, res) => {
-      const order = req.body;
-      const result = await orderCollection.insertOne(order);
+    app.post('/addproduct', async(req,res)=>{
+      const addProduct = req.body;
+      const result = await productCollection.insertOne(addProduct);
       res.send(result);
-    });
+    })
 
+    
     app.put("/products/:id", async (req, res) => {
       const id = req.params.id;
       const updateItem = req.body;
@@ -59,6 +60,11 @@ async function run() {
         option
       );
       res.send(result);
+
+    });app.post("/order", async (req, res) => {
+      const order = req.body;
+      const result = await orderCollection.insertOne(order);
+      res.send(result);
     });
 
     //order get
@@ -67,11 +73,6 @@ async function run() {
       const query = { email };
       const orders = await orderCollection.find(query).toArray();
       res.send(orders);
-    });
-
-    app.get('/user',async(req,res) => {
-      const users = await userCollection.find().toArray();
-      res.send(users)
     });
 
     //Users
@@ -87,19 +88,33 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/admin/:email', async(req,res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({email: email});
+      const isAdmin = user.roll === 'admin';
+      res.send({admin: isAdmin});
+    })
+
     // Make user admin
     app.put("/user/admin/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email)
       const filter = { email: email };
       const updateDoc = {
-        $set: { roll:'admin' },
+        $set: { roll: "admin" },
       };
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
     //Delete order
+    app.delete("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    //Delete User
     app.delete("/order/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
